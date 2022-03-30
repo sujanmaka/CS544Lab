@@ -31,7 +31,7 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public PostDto getPostById(@PathVariable long id) {
+    public PostDto getPostById(@PathVariable Long id) {
         return postServiceImpl.getPostById(id);
     }
 
@@ -41,13 +41,13 @@ public class PostController {
     }
 
     @PutMapping("{id}")
-    public PostDto updatePost(@PathVariable long id, @RequestBody PostDto post) {
+    public PostDto updatePost(@PathVariable Long id, @RequestBody PostDto post) {
         return postServiceImpl.updatePost(id, post);
     }
 
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePost(@PathVariable long id) {
+    public void deletePost(@PathVariable Long id) {
         postServiceImpl.deletePost(id);
     }
 }

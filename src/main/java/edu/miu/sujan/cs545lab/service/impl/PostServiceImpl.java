@@ -3,13 +3,16 @@ package edu.miu.sujan.cs545lab.service.impl;
 import edu.miu.sujan.cs545lab.domain.Post;
 import edu.miu.sujan.cs545lab.dto.FilterDto;
 import edu.miu.sujan.cs545lab.dto.PostDto;
+import edu.miu.sujan.cs545lab.exception.DataNotFoundException;
 import edu.miu.sujan.cs545lab.repository.PostRepository;
 import edu.miu.sujan.cs545lab.service.PostService;
+import edu.miu.sujan.cs545lab.util.CustomNullAwareBeanUtils;
 import edu.miu.sujan.cs545lab.util.MapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -38,41 +41,41 @@ public class PostServiceImpl implements PostService {
     @Override
     @SuppressWarnings("unchecked")
     public List<PostDto> getPosts() {
-        return (List<PostDto>) mapperToPostDto.mapList(postRepository.getPosts(), new PostDto());
+        return (List<PostDto>) mapperToPostDto.mapList(postRepository.findAll(), new PostDto());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public List<PostDto> getPosts(FilterDto filterDto) {
-        return (List<PostDto>) mapperToPostDto.mapList(postRepository.getPosts(filterDto), new PostDto());
+        return (List<PostDto>) mapperToPostDto.mapList(postRepository.findAllByAuthor(filterDto.getAuthor()), new PostDto());
     }
 
     @Override
     public PostDto createPost(PostDto post) {
-        Post createdPost = postRepository.createPost((Post) mapperToPost.getMap(post, new Post()));
+        Post createdPost = postRepository.save((Post) mapperToPost.getMap(post, new Post()));
         return (PostDto) mapperToPostDto.getMap(createdPost, new PostDto());
     }
 
     @Override
-    public PostDto getPostById(long id) {
-        Post post = postRepository.getPostById(id);
-        if (post != null) {
-            return (PostDto) mapperToPostDto.getMap(post, new PostDto());
-        }
-        return null;
+    public PostDto getPostById(Long id) {
+        Optional<Post> post = postRepository.findById(id);
+        return post.map(value -> (PostDto) mapperToPostDto.getMap(value, new PostDto())).orElse(null);
     }
 
     @Override
-    public void deletePost(long id) {
-        postRepository.deletePost(id);
+    public void deletePost(Long id) {
+        postRepository.delete((Post) mapperToPost.getMap(getPostById(id), new Post()));
     }
 
     @Override
-    public PostDto updatePost(long id, PostDto post) {
-        Post updatedPost = postRepository.updatePost(id, (Post) mapperToPost.getMap(post, new Post()));
-        if (updatedPost != null) {
-            return (PostDto) mapperToPostDto.getMap(updatedPost, new PostDto());
+    public PostDto updatePost(Long id, PostDto post) {
+        PostDto currentPost = getPostById(id);
+        if (currentPost == null) {
+            throw new DataNotFoundException(String.format("Post with id %d not found", id));
         }
-        return null;
+        CustomNullAwareBeanUtils.myCopyProperties(post, currentPost);
+        postRepository.save((Post) mapperToPost.getMap(currentPost, new Post()));
+        post.setId(currentPost.getId());
+        return post;
     }
 }
