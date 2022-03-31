@@ -1,5 +1,6 @@
 package edu.miu.sujan.cs545lab.service.impl;
 
+import antlr.StringUtils;
 import edu.miu.sujan.cs545lab.domain.Post;
 import edu.miu.sujan.cs545lab.dto.FilterDto;
 import edu.miu.sujan.cs545lab.dto.PostDto;
@@ -47,7 +48,15 @@ public class PostServiceImpl implements PostService {
     @Override
     @SuppressWarnings("unchecked")
     public List<PostDto> getPosts(FilterDto filterDto) {
-        return (List<PostDto>) mapperToPostDto.mapList(postRepository.findAllByAuthor(filterDto.getAuthor()), new PostDto());
+        if (filterDto != null) {
+            if (filterDto.getAuthor() != null) {
+                return (List<PostDto>) mapperToPostDto.mapList(postRepository.findAllByAuthor(filterDto.getAuthor()), new PostDto());
+            }
+            if (filterDto.getTitle() != null) {
+                return (List<PostDto>) mapperToPostDto.mapList(postRepository.findAllByTitle(filterDto.getTitle()), new PostDto());
+            }
+        }
+        return getPosts();
     }
 
     @Override

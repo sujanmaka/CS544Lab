@@ -1,6 +1,8 @@
 package edu.miu.sujan.cs545lab.service.impl;
 
 import edu.miu.sujan.cs545lab.domain.User;
+import edu.miu.sujan.cs545lab.dto.CommentDto;
+import edu.miu.sujan.cs545lab.dto.FilterDto;
 import edu.miu.sujan.cs545lab.dto.PostDto;
 import edu.miu.sujan.cs545lab.dto.UserDto;
 import edu.miu.sujan.cs545lab.exception.DataNotFoundException;
@@ -46,6 +48,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public List<UserDto> getUsers(FilterDto filterDto) {
+        if (filterDto != null) {
+            if (filterDto.getNumberOfPost() > 0) {
+                List<User> users = userRepository.findUsersWithMoreThanGivenPost(filterDto.getNumberOfPost());
+                return (List<UserDto>) mapperToUserDto.mapList(users, new UserDto());
+            }
+            if (filterDto.getTitle() != null) {
+                List<User> users = userRepository.findUsersWithPostWithGivenTitle(filterDto.getTitle());
+                return (List<UserDto>) mapperToUserDto.mapList(users, new UserDto());
+            }
+        }
+        return getUsers(false);
+    }
+
+    @Override
     public UserDto createUser(UserDto user) {
         User createdUser = userRepository.save((User) mapperToUser.getMap(user, new User()));
         return (UserDto) mapperToUserDto.getMap(createdUser, new UserDto());
@@ -64,5 +82,23 @@ public class UserServiceImpl implements UserService {
             throw new DataNotFoundException(String.format("User with id %d not found", id));
         }
         return user.getPosts();
+    }
+
+    @Override
+    public CommentDto getComment(Long userId, Long postId, Long commentId) {
+        List<PostDto> posts = getPostsByUserId(userId);
+        Optional<PostDto> postDto = posts.stream().filter(p -> p.getId().equals(postId)).findFirst();
+        if (postDto.isPresent()) {
+            Optional<CommentDto> commentDto = postDto.get().getComments().stream().filter(c -> c.getId().equals(commentId)).findFirst();
+            if (commentDto.isPresent()) {
+                return commentDto.get();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
     }
 }

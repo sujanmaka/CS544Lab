@@ -13,7 +13,7 @@ public class User {
     private Long id;
     private String name;
     @OneToMany(targetEntity = Post.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "user_id")
     private List<Post> posts;
 
     public User() {
