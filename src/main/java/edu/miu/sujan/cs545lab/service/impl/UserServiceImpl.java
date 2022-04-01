@@ -1,5 +1,6 @@
 package edu.miu.sujan.cs545lab.service.impl;
 
+import edu.miu.sujan.cs545lab.aspect.annotation.ExecutionTime;
 import edu.miu.sujan.cs545lab.domain.User;
 import edu.miu.sujan.cs545lab.dto.CommentDto;
 import edu.miu.sujan.cs545lab.dto.FilterDto;
@@ -70,6 +71,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @ExecutionTime
     public UserDto getUserById(Long id) {
         Optional<User> user = userRepository.findById(id);
         return user.map(value -> (UserDto) mapperToUserDto.getMap(value, new UserDto())).orElse(null);
@@ -99,6 +101,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id) {
+        UserDto user = getUserById(id);
+        if (user == null) {
+            throw new DataNotFoundException(String.format("User with id %d not found", id));
+        }
         userRepository.deleteById(id);
     }
 }
