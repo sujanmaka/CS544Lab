@@ -8,17 +8,17 @@ import edu.miu.sujan.cs545lab.dto.UserDto;
 import java.util.List;
 
 public interface UserService {
-    List<UserDto> getUsers(boolean userWithMoreThanOnePost);
+  List<UserDto> getUsers(boolean userWithMoreThanOnePost);
 
-    List<UserDto> getUsers(FilterDto filterDto);
+  List<UserDto> getUsers(FilterDto filterDto);
 
-    UserDto createUser(UserDto user);
+  UserDto createUser(UserDto user);
 
-    UserDto getUserById(Long id);
+  UserDto getUserById(Long id);
 
-    List<PostDto> getPostsByUserId(Long id);
+  List<PostDto> getPostsByUserId(Long id);
 
-    CommentDto getComment(Long userId, Long postId, Long commentId);
+  CommentDto getComment(Long userId, Long postId, Long commentId);
 
-    void deleteUser(Long id);
+  void deleteUser(Long id);
 }

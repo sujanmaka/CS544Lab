@@ -7,6 +7,6 @@ import javax.persistence.Embeddable;
 @Data
 @Embeddable
 public class Principal {
-    private Long userId;
-    private String userName;
+  private Long userId;
+  private String userName;
 }

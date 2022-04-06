@@ -10,20 +10,18 @@ import java.util.stream.Collectors;
 @Component
 public class MapperUtils<E> {
 
-    ModelMapper modelMapper;
+  ModelMapper modelMapper;
 
-    @Autowired
-    public void setModelMapper(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
-    }
+  @Autowired
+  public void setModelMapper(ModelMapper modelMapper) {
+    this.modelMapper = modelMapper;
+  }
 
-    public List<?> mapList(List<?> list, E convertTo) {
-        return list.stream().map(o -> getMap(o, convertTo)).collect(Collectors.toList());
-    }
+  public List<?> mapList(List<?> list, E convertTo) {
+    return list.stream().map(o -> getMap(o, convertTo)).collect(Collectors.toList());
+  }
 
-    public Object getMap(Object o, E convertTo) {
-        return modelMapper.map(o, convertTo.getClass());
-    }
-
-
+  public Object getMap(Object o, E convertTo) {
+    return modelMapper.map(o, convertTo.getClass());
+  }
 }

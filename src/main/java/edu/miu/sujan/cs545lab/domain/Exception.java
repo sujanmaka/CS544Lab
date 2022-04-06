@@ -7,5 +7,5 @@ import javax.persistence.Entity;
 @Entity
 @Data
 public class Exception extends Logger {
-    private String exception;
+  private String exception;
 }

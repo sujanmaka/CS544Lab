@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class FilterDto {
-    private String author;
-    private int numberOfPost;
-    private String title;
+  private String author;
+  private int numberOfPost;
+  private String title;
 }

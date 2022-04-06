@@ -11,43 +11,43 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/api/v1/posts")
 public class PostController {
-    private PostServiceImpl postServiceImpl;
+  private PostServiceImpl postServiceImpl;
 
-    @Autowired
-    public void setPostService(PostServiceImpl postServiceImpl) {
-        this.postServiceImpl = postServiceImpl;
-    }
+  @Autowired
+  public void setPostService(PostServiceImpl postServiceImpl) {
+    this.postServiceImpl = postServiceImpl;
+  }
 
-    @GetMapping
-    public List<PostDto> getPosts() {
-        return postServiceImpl.getPosts();
-    }
+  @GetMapping
+  public List<PostDto> getPosts() {
+    return postServiceImpl.getPosts();
+  }
 
-    @GetMapping(headers = "API-VERSION=2")
-    public List<PostDto> getPosts(FilterDto filter) {
-        return postServiceImpl.getPosts(filter);
-    }
+  @GetMapping(headers = "API-VERSION=2")
+  public List<PostDto> getPosts(FilterDto filter) {
+    return postServiceImpl.getPosts(filter);
+  }
 
-    @GetMapping("/{id}")
-    public PostDto getPostById(@PathVariable Long id) {
-        return postServiceImpl.getPostById(id);
-    }
+  @GetMapping("/{id}")
+  public PostDto getPostById(@PathVariable Long id) {
+    return postServiceImpl.getPostById(id);
+  }
 
-    @PostMapping
-    public ResponseEntity<PostDto> createPost(@RequestBody PostDto post) {
-        return new ResponseEntity<>(postServiceImpl.createPost(post), HttpStatus.CREATED);
-    }
+  @PostMapping
+  public ResponseEntity<PostDto> createPost(@RequestBody PostDto post) {
+    return new ResponseEntity<>(postServiceImpl.createPost(post), HttpStatus.CREATED);
+  }
 
-    @PutMapping("{id}")
-    public PostDto updatePost(@PathVariable Long id, @RequestBody PostDto post) {
-        return postServiceImpl.updatePost(id, post);
-    }
+  @PutMapping("{id}")
+  public PostDto updatePost(@PathVariable Long id, @RequestBody PostDto post) {
+    return postServiceImpl.updatePost(id, post);
+  }
 
-    @DeleteMapping("{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePost(@PathVariable Long id) {
-        postServiceImpl.deletePost(id);
-    }
+  @DeleteMapping("{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deletePost(@PathVariable Long id) {
+    postServiceImpl.deletePost(id);
+  }
 }

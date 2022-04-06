@@ -8,19 +8,26 @@ import java.util.List;
 @Entity
 @Data
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-    private String name;
-    @OneToMany(targetEntity = Post.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
-    private List<Post> posts;
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
 
-    public User() {
-    }
+  private String name;
+  private String email;
+  private String password;
 
-    public User(String name, List<Post> posts) {
-        this.name = name;
-        this.posts = posts;
-    }
+  @OneToMany(targetEntity = Post.class, cascade = CascadeType.ALL)
+  @JoinColumn(name = "user_id")
+  private List<Post> posts;
+
+  @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+  @JoinTable
+  private List<Role> roles;
+
+  public User() {}
+
+  public User(String name, List<Post> posts) {
+    this.name = name;
+    this.posts = posts;
+  }
 }

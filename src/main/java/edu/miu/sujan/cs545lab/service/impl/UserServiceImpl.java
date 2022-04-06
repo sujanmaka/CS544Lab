@@ -19,92 +19,94 @@ import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private UserRepository userRepository;
-    private MapperUtils<UserDto> mapperToUserDto;
-    private MapperUtils<User> mapperToUser;
+  private UserRepository userRepository;
+  private MapperUtils<UserDto> mapperToUserDto;
+  private MapperUtils<User> mapperToUser;
 
-    @Autowired
-    public void setUserRepository(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+  @Autowired
+  public void setUserRepository(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
 
-    @Autowired
-    public void setMapperToUserDto(MapperUtils<UserDto> mapperToUserDto) {
-        this.mapperToUserDto = mapperToUserDto;
-    }
+  @Autowired
+  public void setMapperToUserDto(MapperUtils<UserDto> mapperToUserDto) {
+    this.mapperToUserDto = mapperToUserDto;
+  }
 
-    @Autowired
-    public void setMapperToUser(MapperUtils<User> mapperToUser) {
-        this.mapperToUser = mapperToUser;
-    }
+  @Autowired
+  public void setMapperToUser(MapperUtils<User> mapperToUser) {
+    this.mapperToUser = mapperToUser;
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<UserDto> getUsers(boolean userWithMoreThanOnePost) {
-        if (userWithMoreThanOnePost) {
-            List<User> users = userRepository.findUsersWithMoreThanOnePost();
-            return (List<UserDto>) mapperToUserDto.mapList(users, new UserDto());
-        }
-        return (List<UserDto>) mapperToUserDto.mapList(userRepository.findAll(), new UserDto());
+  @Override
+  @SuppressWarnings("unchecked")
+  public List<UserDto> getUsers(boolean userWithMoreThanOnePost) {
+    if (userWithMoreThanOnePost) {
+      List<User> users = userRepository.findUsersWithMoreThanOnePost();
+      return (List<UserDto>) mapperToUserDto.mapList(users, new UserDto());
     }
+    return (List<UserDto>) mapperToUserDto.mapList(userRepository.findAll(), new UserDto());
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<UserDto> getUsers(FilterDto filterDto) {
-        if (filterDto != null) {
-            if (filterDto.getNumberOfPost() > 0) {
-                List<User> users = userRepository.findUsersWithMoreThanGivenPost(filterDto.getNumberOfPost());
-                return (List<UserDto>) mapperToUserDto.mapList(users, new UserDto());
-            }
-            if (filterDto.getTitle() != null) {
-                List<User> users = userRepository.findUsersWithPostWithGivenTitle(filterDto.getTitle());
-                return (List<UserDto>) mapperToUserDto.mapList(users, new UserDto());
-            }
-        }
-        return getUsers(false);
+  @Override
+  @SuppressWarnings("unchecked")
+  public List<UserDto> getUsers(FilterDto filterDto) {
+    if (filterDto != null) {
+      if (filterDto.getNumberOfPost() > 0) {
+        List<User> users =
+            userRepository.findUsersWithMoreThanGivenPost(filterDto.getNumberOfPost());
+        return (List<UserDto>) mapperToUserDto.mapList(users, new UserDto());
+      }
+      if (filterDto.getTitle() != null) {
+        List<User> users = userRepository.findUsersWithPostWithGivenTitle(filterDto.getTitle());
+        return (List<UserDto>) mapperToUserDto.mapList(users, new UserDto());
+      }
     }
+    return getUsers(false);
+  }
 
-    @Override
-    public UserDto createUser(UserDto user) {
-        User createdUser = userRepository.save((User) mapperToUser.getMap(user, new User()));
-        return (UserDto) mapperToUserDto.getMap(createdUser, new UserDto());
-    }
+  @Override
+  public UserDto createUser(UserDto user) {
+    User createdUser = userRepository.save((User) mapperToUser.getMap(user, new User()));
+    return (UserDto) mapperToUserDto.getMap(createdUser, new UserDto());
+  }
 
-    @Override
-    @ExecutionTime
-    public UserDto getUserById(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        return user.map(value -> (UserDto) mapperToUserDto.getMap(value, new UserDto())).orElse(null);
-    }
+  @Override
+  @ExecutionTime
+  public UserDto getUserById(Long id) {
+    Optional<User> user = userRepository.findById(id);
+    return user.map(value -> (UserDto) mapperToUserDto.getMap(value, new UserDto())).orElse(null);
+  }
 
-    @Override
-    public List<PostDto> getPostsByUserId(Long id) {
-        UserDto user = getUserById(id);
-        if (user == null) {
-            throw new DataNotFoundException(String.format("User with id %d not found", id));
-        }
-        return user.getPosts();
+  @Override
+  public List<PostDto> getPostsByUserId(Long id) {
+    UserDto user = getUserById(id);
+    if (user == null) {
+      throw new DataNotFoundException(String.format("User with id %d not found", id));
     }
+    return user.getPosts();
+  }
 
-    @Override
-    public CommentDto getComment(Long userId, Long postId, Long commentId) {
-        List<PostDto> posts = getPostsByUserId(userId);
-        Optional<PostDto> postDto = posts.stream().filter(p -> p.getId().equals(postId)).findFirst();
-        if (postDto.isPresent()) {
-            Optional<CommentDto> commentDto = postDto.get().getComments().stream().filter(c -> c.getId().equals(commentId)).findFirst();
-            if (commentDto.isPresent()) {
-                return commentDto.get();
-            }
-        }
-        return null;
+  @Override
+  public CommentDto getComment(Long userId, Long postId, Long commentId) {
+    List<PostDto> posts = getPostsByUserId(userId);
+    Optional<PostDto> postDto = posts.stream().filter(p -> p.getId().equals(postId)).findFirst();
+    if (postDto.isPresent()) {
+      Optional<CommentDto> commentDto =
+          postDto.get().getComments().stream().filter(c -> c.getId().equals(commentId)).findFirst();
+      if (commentDto.isPresent()) {
+        return commentDto.get();
+      }
     }
+    return null;
+  }
 
-    @Override
-    public void deleteUser(Long id) {
-        UserDto user = getUserById(id);
-        if (user == null) {
-            throw new DataNotFoundException(String.format("User with id %d not found", id));
-        }
-        userRepository.deleteById(id);
+  @Override
+  public void deleteUser(Long id) {
+    UserDto user = getUserById(id);
+    if (user == null) {
+      throw new DataNotFoundException(String.format("User with id %d not found", id));
     }
+    userRepository.deleteById(id);
+  }
 }

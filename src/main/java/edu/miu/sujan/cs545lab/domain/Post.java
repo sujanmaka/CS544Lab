@@ -9,23 +9,23 @@ import java.util.List;
 @Data
 public class Post {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-    private String title;
-    private String content;
-    private String author;
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "post_id")
-    private List<Comment> comments;
+  private String title;
+  private String content;
+  private String author;
 
-    public Post() {
-    }
+  @OneToMany(cascade = CascadeType.ALL)
+  @JoinColumn(name = "post_id")
+  private List<Comment> comments;
 
-    public Post(String title, String content, String author) {
-        this.title = title;
-        this.content = content;
-        this.author = author;
-    }
+  public Post() {}
+
+  public Post(String title, String content, String author) {
+    this.title = title;
+    this.content = content;
+    this.author = author;
+  }
 }

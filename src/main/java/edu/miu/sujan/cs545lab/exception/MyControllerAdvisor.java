@@ -12,15 +12,27 @@ import java.util.Map;
 
 @ControllerAdvice
 public class MyControllerAdvisor {
-    @ExceptionHandler(DataNotFoundException.class)
-    public ResponseEntity<Object> handleNodataFoundException(DataNotFoundException ex, WebRequest request) {
+  @ExceptionHandler(DataNotFoundException.class)
+  public ResponseEntity<Object> handleNodataFoundException(
+      DataNotFoundException ex, WebRequest request) {
 
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", HttpStatus.NOT_FOUND.getReasonPhrase());
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
-    }
+    Map<String, Object> body = new LinkedHashMap<>();
+    body.put("timestamp", LocalDateTime.now());
+    body.put("status", HttpStatus.NOT_FOUND.value());
+    body.put("error", HttpStatus.NOT_FOUND.getReasonPhrase());
+    body.put("message", ex.getMessage());
+    return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+  }
 
+  @ExceptionHandler(InvalidUserException.class)
+  public ResponseEntity<Object> handleInvalidUserException(
+      InvalidUserException ex, WebRequest request) {
+
+    Map<String, Object> body = new LinkedHashMap<>();
+    body.put("timestamp", LocalDateTime.now());
+    body.put("status", HttpStatus.UNAUTHORIZED.value());
+    body.put("error", HttpStatus.UNAUTHORIZED.getReasonPhrase());
+    body.put("message", ex.getMessage());
+    return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
+  }
 }
