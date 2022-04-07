@@ -10,7 +10,7 @@ public interface PostService {
 
   List<PostDto> getPosts(FilterDto filter);
 
-  PostDto createPost(PostDto post);
+  PostDto createPost(PostDto post, String email);
 
   PostDto getPostById(Long id);
 

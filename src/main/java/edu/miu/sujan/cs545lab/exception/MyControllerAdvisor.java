@@ -35,4 +35,16 @@ public class MyControllerAdvisor {
     body.put("message", ex.getMessage());
     return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
   }
+
+  @ExceptionHandler(UserExistException.class)
+  public ResponseEntity<Object> handleUserExistException(
+          UserExistException ex, WebRequest request) {
+
+    Map<String, Object> body = new LinkedHashMap<>();
+    body.put("timestamp", LocalDateTime.now());
+    body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
+    body.put("error", HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase());
+    body.put("message", ex.getMessage());
+    return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
+  }
 }

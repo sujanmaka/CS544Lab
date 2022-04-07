@@ -2,13 +2,16 @@ package edu.miu.sujan.cs545lab.aspect;
 
 import edu.miu.sujan.cs545lab.domain.Exception;
 import edu.miu.sujan.cs545lab.domain.Logger;
-import edu.miu.sujan.cs545lab.domain.Principal;
+import edu.miu.sujan.cs545lab.domain.User;
 import edu.miu.sujan.cs545lab.repository.ExceptionRepository;
 import edu.miu.sujan.cs545lab.repository.LoggerRepository;
+import edu.miu.sujan.cs545lab.repository.UserRepository;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -21,6 +24,7 @@ public class LoggerAspect {
 
   private LoggerRepository loggerRepository;
   private ExceptionRepository exceptionRepository;
+  private UserRepository userRepository;
 
   @Autowired
   public void setLoggerRepository(LoggerRepository loggerRepository) {
@@ -32,13 +36,18 @@ public class LoggerAspect {
     this.exceptionRepository = exceptionRepository;
   }
 
+  @Autowired
+  public void setUserRepository(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
+
   @After("execution(* edu.miu.sujan.cs545lab.controller.*.*(..))")
   public void logAllOperations(JoinPoint joinPoint) {
     Logger logger = new Logger();
     logger.setTransactionId(ThreadLocalRandom.current().nextLong(10000));
     logger.setOperation(joinPoint.getSignature().getName());
     logger.setDateTime(LocalDateTime.now());
-    logger.setPrincipal(getPrincipal());
+    logger.setUser(getUser());
     loggerRepository.save(logger);
   }
 
@@ -67,15 +76,19 @@ public class LoggerAspect {
     ex.setTransactionId(ThreadLocalRandom.current().nextLong(10000));
     ex.setOperation(joinPoint.getSignature().getName());
     ex.setDateTime(LocalDateTime.now());
-    ex.setPrincipal(getPrincipal());
+    ex.setUser(getUser());
     ex.setException(exception.getMessage());
     exceptionRepository.save(ex);
   }
 
-  private Principal getPrincipal() {
-    Principal principal = new Principal();
-    principal.setUserId(ThreadLocalRandom.current().nextLong(10000));
-    principal.setUserName("sujan");
-    return principal;
+  private User getUser() {
+    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    String username = "";
+    if (principal instanceof UserDetails) {
+      username = ((UserDetails) principal).getUsername();
+    } else {
+      username = principal.toString();
+    }
+    return userRepository.findByEmail(username);
   }
 }

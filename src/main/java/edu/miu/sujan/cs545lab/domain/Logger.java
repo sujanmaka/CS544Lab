@@ -16,6 +16,7 @@ public class Logger {
 
   private Long transactionId;
   private LocalDateTime dateTime;
-  @Embedded private Principal principal;
+  @OneToOne
+  private User user;
   private String operation;
 }

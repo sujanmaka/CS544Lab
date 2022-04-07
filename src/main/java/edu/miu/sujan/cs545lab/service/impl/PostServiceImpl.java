@@ -1,11 +1,13 @@
 package edu.miu.sujan.cs545lab.service.impl;
 
 import edu.miu.sujan.cs545lab.domain.Post;
+import edu.miu.sujan.cs545lab.domain.User;
 import edu.miu.sujan.cs545lab.dto.FilterDto;
 import edu.miu.sujan.cs545lab.dto.PostDto;
 import edu.miu.sujan.cs545lab.exception.DataNotFoundException;
 import edu.miu.sujan.cs545lab.repository.PostRepository;
 import edu.miu.sujan.cs545lab.service.PostService;
+import edu.miu.sujan.cs545lab.service.UserService;
 import edu.miu.sujan.cs545lab.util.CustomNullAwareBeanUtils;
 import edu.miu.sujan.cs545lab.util.MapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ public class PostServiceImpl implements PostService {
 
   private MapperUtils<PostDto> mapperToPostDto;
   private MapperUtils<Post> mapperToPost;
+  private UserService userService;
 
   @Autowired
   public void setPostRepository(PostRepository postRepository) {
@@ -35,6 +38,11 @@ public class PostServiceImpl implements PostService {
   @Autowired
   public void setMapperToPost(MapperUtils<Post> mapperToPost) {
     this.mapperToPost = mapperToPost;
+  }
+
+  @Autowired
+  public void setUserService(UserService userService) {
+    this.userService = userService;
   }
 
   @Override
@@ -62,8 +70,12 @@ public class PostServiceImpl implements PostService {
   }
 
   @Override
-  public PostDto createPost(PostDto post) {
+  public PostDto createPost(PostDto post, String email) {
     Post createdPost = postRepository.save((Post) mapperToPost.getMap(post, new Post()));
+    User user = userService.getUserByEmail(email);
+    if (user != null) {
+      user.getPosts().add(createdPost);
+    }
     return (PostDto) mapperToPostDto.getMap(createdPost, new PostDto());
   }
 
@@ -75,7 +87,11 @@ public class PostServiceImpl implements PostService {
 
   @Override
   public void deletePost(Long id) {
-    postRepository.delete((Post) mapperToPost.getMap(getPostById(id), new Post()));
+    Optional<Post> post = postRepository.findById(id);
+    if (post.isEmpty()) {
+      throw new DataNotFoundException(String.format("Post with id %d not found.", id));
+    }
+    postRepository.delete((Post) mapperToPost.getMap(post, new Post()));
   }
 
   @Override

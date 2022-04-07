@@ -8,6 +8,7 @@ import edu.miu.sujan.cs545lab.enums.RoleType;
 import edu.miu.sujan.cs545lab.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
@@ -19,10 +20,16 @@ import java.util.List;
 public class UserCommandLineRunner implements CommandLineRunner {
 
   private UserRepository userRepository;
+  private PasswordEncoder passwordEncoder;
 
   @Autowired
   public void setUserRepository(UserRepository userRepository) {
     this.userRepository = userRepository;
+  }
+
+  @Autowired
+  public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+    this.passwordEncoder = passwordEncoder;
   }
 
   @Override
@@ -51,11 +58,11 @@ public class UserCommandLineRunner implements CommandLineRunner {
     User user1 = new User("Sujan Maka", Arrays.asList(post1, post2));
     user1.setRoles(Arrays.asList(role1, role2));
     user1.setEmail("smaka@miu.edu");
-    user1.setPassword("$2a$12$IKEQb00u5QpZMx4v5zMweu.3wrq0pS7XLCHO4yHZ.BW/yvWu1feo2"); // 123
+    user1.setPassword(passwordEncoder.encode("123")); // 123
     User user2 = new User("James Pin", Arrays.asList(post3, post4));
     user2.setRoles(List.of(role1));
     user2.setEmail("james@miu.edu");
-    user2.setPassword("$2a$12$IKEQb00u5QpZMx4v5zMweu.3wrq0pS7XLCHO4yHZ.BW/yvWu1feo2"); // 123
+    user2.setPassword(passwordEncoder.encode("123")); // 123
     userRepository.save(user1);
     userRepository.save(user2);
   }

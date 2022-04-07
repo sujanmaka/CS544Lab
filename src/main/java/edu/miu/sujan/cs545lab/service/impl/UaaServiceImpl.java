@@ -6,6 +6,7 @@ import edu.miu.sujan.cs545lab.dto.RefreshTokenRequest;
 import edu.miu.sujan.cs545lab.exception.InvalidUserException;
 import edu.miu.sujan.cs545lab.service.UaaService;
 import edu.miu.sujan.cs545lab.util.JwtHelper;
+import edu.miu.sujan.cs545lab.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,24 +24,24 @@ public class UaaServiceImpl implements UaaService {
   private final AuthenticationManager authenticationManager;
   private final UserDetailsService userDetailsService;
   private final JwtHelper jwtHelper;
+  private final JwtTokenUtil jwtTokenUtil;
 
   @Override
   public LoginResponse login(LoginRequest loginRequest) {
     try {
-      var result =
-          authenticationManager.authenticate(
-              new UsernamePasswordAuthenticationToken(
-                  loginRequest.getEmail(), loginRequest.getPassword()));
-      final UserDetails userDetails =
-          userDetailsService.loadUserByUsername(loginRequest.getEmail());
-
-      final String accessToken = jwtHelper.generateToken(loginRequest.getEmail());
-      final String refreshToken = jwtHelper.generateRefreshToken(loginRequest.getEmail());
-      return new LoginResponse(accessToken, refreshToken);
+      authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(
+              loginRequest.getEmail(), loginRequest.getPassword()));
     } catch (BadCredentialsException e) {
       log.info("Bad Credentials");
       throw new InvalidUserException("Invalid credentials.");
     }
+    final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
+
+    final String accessToken = jwtHelper.generateToken(loginRequest.getEmail());
+//    final String accessToken = jwtTokenUtil.generateToken(userDetails);
+    final String refreshToken = jwtHelper.generateRefreshToken(loginRequest.getEmail());
+    return new LoginResponse(accessToken, refreshToken);
   }
 
   @Override

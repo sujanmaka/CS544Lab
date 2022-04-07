@@ -1,5 +1,6 @@
 package edu.miu.sujan.cs545lab.service;
 
+import edu.miu.sujan.cs545lab.domain.User;
 import edu.miu.sujan.cs545lab.dto.CommentDto;
 import edu.miu.sujan.cs545lab.dto.FilterDto;
 import edu.miu.sujan.cs545lab.dto.PostDto;
@@ -21,4 +22,6 @@ public interface UserService {
   CommentDto getComment(Long userId, Long postId, Long commentId);
 
   void deleteUser(Long id);
+
+  User getUserByEmail(String email);
 }

@@ -7,6 +7,7 @@ import edu.miu.sujan.cs545lab.dto.FilterDto;
 import edu.miu.sujan.cs545lab.dto.PostDto;
 import edu.miu.sujan.cs545lab.dto.UserDto;
 import edu.miu.sujan.cs545lab.exception.DataNotFoundException;
+import edu.miu.sujan.cs545lab.exception.UserExistException;
 import edu.miu.sujan.cs545lab.repository.UserRepository;
 import edu.miu.sujan.cs545lab.service.UserService;
 import edu.miu.sujan.cs545lab.util.MapperUtils;
@@ -67,6 +68,11 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserDto createUser(UserDto user) {
+    User existingUser = userRepository.findByEmail(user.getEmail());
+    if (existingUser != null) {
+      throw new UserExistException(
+          String.format("User with email %s already exists.", user.getEmail()));
+    }
     User createdUser = userRepository.save((User) mapperToUser.getMap(user, new User()));
     return (UserDto) mapperToUserDto.getMap(createdUser, new UserDto());
   }
@@ -108,5 +114,10 @@ public class UserServiceImpl implements UserService {
       throw new DataNotFoundException(String.format("User with id %d not found", id));
     }
     userRepository.deleteById(id);
+  }
+
+  @Override
+  public User getUserByEmail(String email) {
+    return userRepository.findByEmail(email);
   }
 }
