@@ -53,7 +53,6 @@ public class UaaServiceImpl implements UaaService {
     boolean isRefreshTokenValid = jwtUtil.validateToken(refreshTokenRequest.getRefreshToken());
     if (isRefreshTokenValid) {
       boolean isAccessTokenExpired = jwtUtil.isTokenExpired(refreshTokenRequest.getAccessToken());
-      isAccessTokenExpired = true;
       if (isAccessTokenExpired) {
         // if refreshToken doesn't exist in DB,
         // then the passed token should be the previous_refreshToken
