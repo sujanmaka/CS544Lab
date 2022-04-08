@@ -1,6 +1,6 @@
 package edu.miu.sujan.cs545lab.security;
 
-import edu.miu.sujan.cs545lab.util.JwtHelper;
+import edu.miu.sujan.cs545lab.util.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,12 +18,12 @@ import java.io.IOException;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-  private final JwtHelper jwtHelper;
+  private final JwtUtil jwtUtil;
 
   private final UserDetailsService userDetailsService;
 
-  public JwtFilter(JwtHelper jwtHelper, UserDetailsService userDetailsService) {
-    this.jwtHelper = jwtHelper;
+  public JwtFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+    this.jwtUtil = jwtUtil;
     this.userDetailsService = userDetailsService;
   }
 
@@ -39,7 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
     if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
       token = authorizationHeader.substring(7);
       try {
-        email = jwtHelper.getUsernameFromToken(token);
+        email = jwtUtil.getUsernameFromToken(token);
       } catch (ExpiredJwtException e) {
         String isRefreshToken = request.getHeader("isRefreshToken");
       }
@@ -47,7 +47,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       var userDetails = userDetailsService.loadUserByUsername(email);
-      boolean isTokenValid = jwtHelper.validateToken(token);
+      boolean isTokenValid = jwtUtil.validateToken(token);
       if (isTokenValid) {
         UsernamePasswordAuthenticationToken authentication =
             new UsernamePasswordAuthenticationToken(

@@ -24,7 +24,7 @@ public class AuthenticationController {
     return new ResponseEntity<>(uaaService.login(loginRequest), HttpStatus.ACCEPTED);
   }
 
-  @PostMapping("/refreshToken")
+  @PostMapping("/refresh")
   public LoginResponse refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
     return uaaService.refreshToken(refreshTokenRequest);
   }

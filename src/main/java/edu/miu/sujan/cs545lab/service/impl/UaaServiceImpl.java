@@ -1,12 +1,13 @@
 package edu.miu.sujan.cs545lab.service.impl;
 
+import edu.miu.sujan.cs545lab.domain.Token;
 import edu.miu.sujan.cs545lab.dto.LoginRequest;
 import edu.miu.sujan.cs545lab.dto.LoginResponse;
 import edu.miu.sujan.cs545lab.dto.RefreshTokenRequest;
 import edu.miu.sujan.cs545lab.exception.InvalidUserException;
+import edu.miu.sujan.cs545lab.service.TokenService;
 import edu.miu.sujan.cs545lab.service.UaaService;
-import edu.miu.sujan.cs545lab.util.JwtHelper;
-import edu.miu.sujan.cs545lab.util.JwtTokenUtil;
+import edu.miu.sujan.cs545lab.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,8 +24,8 @@ public class UaaServiceImpl implements UaaService {
 
   private final AuthenticationManager authenticationManager;
   private final UserDetailsService userDetailsService;
-  private final JwtHelper jwtHelper;
-  private final JwtTokenUtil jwtTokenUtil;
+  private final JwtUtil jwtUtil;
+  private final TokenService tokenService;
 
   @Override
   public LoginResponse login(LoginRequest loginRequest) {
@@ -38,21 +39,44 @@ public class UaaServiceImpl implements UaaService {
     }
     final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
 
-    final String accessToken = jwtHelper.generateToken(loginRequest.getEmail());
-//    final String accessToken = jwtTokenUtil.generateToken(userDetails);
-    final String refreshToken = jwtHelper.generateRefreshToken(loginRequest.getEmail());
+    final String accessToken = jwtUtil.generateToken(userDetails);
+    //    final String accessToken = jwtTokenUtil.generateToken(userDetails);
+    final String refreshToken = jwtUtil.generateRefreshToken(loginRequest.getEmail());
+    Token token = new Token(refreshToken, refreshToken);
+    token.setRefreshToken(refreshToken);
+    tokenService.save(token);
     return new LoginResponse(accessToken, refreshToken);
   }
 
   @Override
   public LoginResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
-    boolean isRefreshTokenValid = jwtHelper.validateToken(refreshTokenRequest.getRefreshToken());
+    boolean isRefreshTokenValid = jwtUtil.validateToken(refreshTokenRequest.getRefreshToken());
     if (isRefreshTokenValid) {
-      final String accessToken =
-          jwtHelper.generateToken(jwtHelper.getSubject(refreshTokenRequest.getRefreshToken()));
-      var loginResponse = new LoginResponse(accessToken, refreshTokenRequest.getRefreshToken());
-      return loginResponse;
+      boolean isAccessTokenExpired = jwtUtil.isTokenExpired(refreshTokenRequest.getAccessToken());
+      isAccessTokenExpired = true;
+      if (isAccessTokenExpired) {
+        // if refreshToken doesn't exist in DB,
+        // then the passed token should be the previous_refreshToken
+        if (!tokenService.isRefreshTokenExist(refreshTokenRequest.getRefreshToken())) {
+          // deleting token object based on previous_refreshToken
+          // after this step, re-login is required
+          tokenService.deleteRefreshToken(refreshTokenRequest.getRefreshToken());
+          throw new InvalidUserException("Invalid Refresh Token");
+        }
+        // generate new refresh token and update it into token table
+        String newRefreshToken =
+            jwtUtil.generateNewRefreshToken(refreshTokenRequest.getAccessToken());
+        tokenService.updateRefreshToken(refreshTokenRequest.getRefreshToken(), newRefreshToken);
+
+        System.out.println("ACCESS TOKEN IS EXPIRED");
+        final String newAccessToken =
+            jwtUtil.doGenerateToken(jwtUtil.getSubject(refreshTokenRequest.getRefreshToken()));
+        new LoginResponse(newAccessToken, newRefreshToken);
+      } else {
+        System.out.println("ACCESS TOKEN IS NOT EXPIRED");
+      }
     }
-    return new LoginResponse();
+    return new LoginResponse(
+        refreshTokenRequest.getAccessToken(), refreshTokenRequest.getRefreshToken());
   }
 }
